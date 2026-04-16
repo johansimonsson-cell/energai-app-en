@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Helvetica Now Display', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+}
+
+:root {
+  /* Typography */
+  --font-primary: 'Helvetica Now Display', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  --font-primary-fallback: 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --type-display-xxl: 160px;
+  --type-display-xl: 96px;
+  --type-display-lg: 72px;
+  --type-display-md: 56px;
+  --type-display-sm: 40px;
+  --type-heading-lg: 32px;
+  --type-heading-md: 24px;
+  --type-heading-sm: 20px;
+  --type-body-lg: 18px;
+  --type-body-md: 16px;
+  --type-body-sm: 14px;
+  --type-label-lg: 14px;
+  --type-label-md: 12px;
+  --type-label-sm: 11px;
+
+  /* Colors (monochrome core) */
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+  --color-gray-950: #0A0A0A;
+  --color-gray-900: #1A1A1A;
+  --color-gray-800: #333333;
+  --color-gray-700: #4D4D4D;
+  --color-gray-600: #696969;
+  --color-gray-500: #8C8C8C;
+  --color-gray-400: #999999;
+  --color-gray-300: #B3B3B3;
+  --color-gray-200: #D5D5D5;
+  --color-gray-100: #E8E8E8;
+  --color-gray-50: #F0F0F0;
+  --color-gray-25: #F5F5F5;
+
+  /* Accent - used SPARINGLY */
+  --color-accent: #22C55E;
+  --color-accent-dim: #16A34A;
+  --color-accent-subtle: rgba(34, 197, 94, 0.08);
+
+  /* Semantic */
+  --color-error: #D32F2F;
+  --color-success: #2E7D32;
+  --color-warning: #E65100;
+
+  /* Spacing (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Grid */
+  --grid-columns: 12;
+  --grid-gutter: 24px;
+  --grid-margin: 40px;
+  --grid-max-width: 1440px;
+
+  /* Motion */
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-medium: 300ms;
+  --duration-slow: 500ms;
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+  --ease-exit: cubic-bezier(0.4, 0.0, 1.0, 1.0);
+}
+
+/* Base reset */
+*, *::before, *::after {
+  border-radius: 0 !important;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-primary), var(--font-primary-fallback);
+  font-size: var(--type-body-md);
+  line-height: 1.5;
+  color: var(--color-black);
+  background: var(--color-white);
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-black);
+  color: var(--color-white);
+  font-size: var(--type-body-sm);
+  z-index: 9999;
+}
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+/* Scrollbar styling for chat */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-gray-700);
+}
+
+/* ——— Reduced Motion ——— */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ——— Stagger animation for list items ——— */
+@media (prefers-reduced-motion: no-preference) {
+  .stagger-item {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: stagger-in var(--duration-medium) var(--ease-enter) forwards;
+  }
+  .stagger-item:nth-child(1) { animation-delay: 0ms; }
+  .stagger-item:nth-child(2) { animation-delay: 60ms; }
+  .stagger-item:nth-child(3) { animation-delay: 120ms; }
+  .stagger-item:nth-child(4) { animation-delay: 180ms; }
+  .stagger-item:nth-child(5) { animation-delay: 240ms; }
+  .stagger-item:nth-child(6) { animation-delay: 300ms; }
+
+  @keyframes stagger-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ——— Hover utility (opacity shift + bg change) ——— */
+@media (prefers-reduced-motion: no-preference) {
+  .hover-shift {
+    transition: opacity var(--duration-fast) var(--ease-default),
+                background var(--duration-fast) var(--ease-default);
+  }
+  .hover-shift:hover {
+    opacity: 0.85;
+  }
+}
+
+/* ——— Selection ——— */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-black);
+}

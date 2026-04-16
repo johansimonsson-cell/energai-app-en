@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ——— ANVÄNDARE ———
+model User {
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  password              String
+  name                  String?
+  phone                 String?
+  role                  String   @default("CUSTOMER") // CUSTOMER | ADMIN
+  address               String?
+  postalCode            String?
+  city                  String?
+  priceArea             String?  // SE1 | SE2 | SE3 | SE4
+  annualConsumptionKwh  Int?
+  createdAt             DateTime @default(now())
+
+  agreements    ElectricityAgreement[]
+  hardwareOrders HardwareOrder[]
+  uploadedFiles UploadedFile[]
+  chatSessions  ChatSession[]
+  crmNotes      CRMNote[]
+}
+
+// ——— PRODUKTKATALOG ———
+model Product {
+  id                      String   @id @default(cuid())
+  slug                    String   @unique
+  category                String   // ELECTRICITY_PLAN | SOLAR | BATTERY | CHARGER
+  name                    String
+  description             String
+  shortDescription        String?
+  priceType               String   // SUBSCRIPTION | ONE_TIME | INSTALLMENT
+  basePrice               Float    // öre/kWh för elavtal, kr för hårdvara
+  currency                String   @default("SEK")
+  specifications          String?  // JSON
+  imageUrl                String?
+  installationIncluded    Boolean  @default(false)
+  installationTimeWeeks   Int?
+  warrantyYears           Int?
+  eligibleForRot          Boolean  @default(false)
+  eligibleForGreenDeduction Boolean @default(false)
+  greenDeductionPercent   Float?
+  isActive                Boolean  @default(true)
+  sortOrder               Int      @default(0)
+
+  agreements      ElectricityAgreement[]
+  orderItems      HardwareOrderItem[]
+  offerProducts   OfferProduct[]
+  bundleProducts  BundleProduct[]
+}
+
+// ——— ELAVTAL ———
+model ElectricityAgreement {
+  id             String    @id @default(cuid())
+  userId         String
+  productId      String?
+  planType       String    // FIXED | VARIABLE | GREEN
+  pricePerKwh    Float?    // öre/kWh
+  monthlyFee     Float?
+  startDate      DateTime
+  endDate        DateTime?
+  bindingMonths  Int?
+  status         String    @default("ACTIVE") // ACTIVE | PENDING | CANCELLED
+  address        String
+  meterNumber    String
+
+  user    User     @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+}
+
+// ——— HÅRDVARUORDER ———
+model HardwareOrder {
+  id                String    @id @default(cuid())
+  userId            String
+  status            String    @default("QUOTE") // QUOTE | CONFIRMED | SCHEDULED | INSTALLING | COMPLETED | CANCELLED
+  totalPrice        Float
+  rotDeduction      Float     @default(0)
+  greenDeduction    Float     @default(0)
+  netPrice          Float
+  financingType     String    @default("CASH") // CASH | INSTALLMENT | LEASING
+  monthlyPayment    Float?
+  installmentMonths Int?
+  interestRate      Float?
+  installationDate  DateTime?
+  installerNotes    String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user  User                @relation(fields: [userId], references: [id])
+  items HardwareOrderItem[]
+}
+
+model HardwareOrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String
+  quantity       Int     @default(1)
+  unitPrice      Float
+  lineTotal      Float
+  specifications String? // JSON - kundspecifikt
+
+  order   HardwareOrder @relation(fields: [orderId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+}
+
+// ——— UPPLADDADE FILER ———
+model UploadedFile {
+  id             String   @id @default(cuid())
+  userId         String?
+  chatMessageId  String?
+  fileName       String
+  fileType       String   // IMAGE | PDF | DOCUMENT
+  filePath       String
+  fileSize       Int
+  aiAnalysis     String?  // JSON
+  category       String?  // ROOF_PHOTO | ELECTRICAL_PANEL | PARKING | INVOICE | INSTALLATION | OTHER
+  createdAt      DateTime @default(now())
+
+  user    User?        @relation(fields: [userId], references: [id])
+  message ChatMessage? @relation(fields: [chatMessageId], references: [id])
+}
+
+// ——— CHAT ———
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String?
+  context   String?  // JSON
+  createdAt DateTime @default(now())
+
+  user     User?         @relation(fields: [userId], references: [id])
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id                String   @id @default(cuid())
+  sessionId         String
+  role              String   // USER | ASSISTANT | SYSTEM
+  content           String
+  contentPanelState String?  // JSON
+  createdAt         DateTime @default(now())
+
+  session     ChatSession    @relation(fields: [sessionId], references: [id])
+  attachments UploadedFile[]
+}
+
+// ——— CRM ———
+model CRMNote {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // CALL | CHAT | NOTE | UPSELL_ATTEMPT | HARDWARE_INQUIRY | INSTALLATION_UPDATE
+  content   String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// ——— ERBJUDANDEN & PAKET ———
+model Offer {
+  id              String    @id @default(cuid())
+  name            String
+  description     String
+  discountPercent Float?
+  discountType    String    @default("PERCENTAGE") // PERCENTAGE | FIXED_AMOUNT | BUNDLE_PRICE
+  validUntil      DateTime?
+  targetSegment   String?
+  isActive        Boolean   @default(true)
+
+  products OfferProduct[]
+}
+
+model OfferProduct {
+  id        String @id @default(cuid())
+  offerId   String
+  productId String
+
+  offer   Offer   @relation(fields: [offerId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Bundle {
+  id             String  @id @default(cuid())
+  name           String
+  description    String
+  bundleDiscount Float   // % rabatt
+  isActive       Boolean @default(true)
+
+  products BundleProduct[]
+}
+
+model BundleProduct {
+  id        String @id @default(cuid())
+  bundleId  String
+  productId String
+
+  bundle  Bundle  @relation(fields: [bundleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// ——— FINANSIERING ———
+model FinancingOption {
+  id                   String  @id @default(cuid())
+  name                 String
+  type                 String  // INSTALLMENT | LEASING
+  minAmount            Float
+  maxAmount            Float
+  interestRatePercent  Float
+  availableTermsMonths String  // JSON array e.g. [36, 60, 120]
+  isActive             Boolean @default(true)
+}
+
+// ——— KUNSKAPSBAS ———
+model KnowledgeArticle {
+  id           String @id @default(cuid())
+  slug         String @unique
+  category     String
+  title        String
+  content      String
+  tags         String // JSON array
+  relatedViews String // JSON array
+}
+
+// ——— ELNÄTSBOLAG ———
+model GridOperator {
+  id          String @id @default(cuid())
+  name        String
+  region      String
+  phoneNumber String
+  website     String
+  priceArea   String // SE1 | SE2 | SE3 | SE4
+}
+
+// ——— SPOTPRISER ———
+model SpotPrice {
+  id           String   @id @default(cuid())
+  priceArea    String
+  date         DateTime
+  hour         Int
+  priceOreKwh  Float
+}
+
+// ——— ADMIN ———
+model AdminConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // JSON
+  updatedAt DateTime @updatedAt
+  updatedBy String
+}
