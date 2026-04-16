@@ -521,7 +521,7 @@ Priority segments: ${topSegments}
 ${policy.guardrails.ai_paused ? '⚠ AI IS PAUSED — show human-handoff immediately for every message.' : ''}
 
 Adapt behavior:
-- Tonality "${tone2}": ${tone2 === 'rådgivande' ? 'less pushy, more transparent, ask follow-up questions' : tone2 === 'säljande' ? 'clear CTAs, highlight offers early' : 'balanced — inform first, suggest later'}
+- Tonality "${tone2}": ${tone2 === 'advisory' ? 'less pushy, more transparent, ask follow-up questions' : tone2 === 'sales-oriented' ? 'clear CTAs, highlight offers early' : 'balanced — inform first, suggest later'}
 - NEVER offer more than ${cap}% discount. If the customer requests more: refer to a sales representative via human-handoff.
 - If marketing budget remaining < 10% of total: avoid new discounts, focus on value.`)
 
