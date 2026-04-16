@@ -7,7 +7,9 @@ import { getMockImageAnalysis } from '@/lib/ai/mockAnalysis'
 let _anthropic: Anthropic | null = null
 function getAnthropic() {
   if (!_anthropic) {
-    _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const apiKey = process.env.ENERGAI_ANTHROPIC_KEY || process.env.ANTHROPIC_API_KEY
+    if (!apiKey) throw new Error('ENERGAI_ANTHROPIC_KEY or ANTHROPIC_API_KEY environment variable is not set')
+    _anthropic = new Anthropic({ apiKey })
   }
   return _anthropic
 }
@@ -322,7 +324,7 @@ export async function POST(request: Request) {
       async start(controller) {
         try {
           const claudeStream = getAnthropic().messages.stream({
-            model: 'claude-sonnet-4-6-20250514',
+            model: 'claude-sonnet-4-20250514',
             max_tokens: 4096,
             system: systemPrompt,
             messages: claudeMessages,
