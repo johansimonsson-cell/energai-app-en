@@ -118,10 +118,21 @@ export function buildSystemPrompt(config: SystemPromptConfig): string {
     recentCRMNotes,
   } = config
 
-  const tone = adminConfig.tone_of_voice?.style || 'Professional'
+  const toneRaw = adminConfig.tone_of_voice?.style || 'Professional'
+  // This is the English version of the app — shared admin config may contain Swedish
+  // values. Translate common Swedish tone labels to their English equivalents so the
+  // system prompt stays fully English.
+  const toneMap: Record<string, string> = {
+    Professionell: 'Professional',
+    Avslappnad: 'Relaxed',
+    Formell: 'Formal',
+    Vänlig: 'Friendly',
+  }
+  const tone = toneMap[toneRaw] || toneRaw
   const customInstructions = adminConfig.tone_of_voice?.custom || ''
   const upsell = adminConfig.upsell_settings || { enabled: true, level: 3, maxOffersPerSession: 1 }
-  const responseFormat = adminConfig.response_format || { maxSentences: 3, language: 'English', useEmoji: false }
+  // Force English for this app version regardless of the shared admin config value.
+  const responseFormat = { ...(adminConfig.response_format || { maxSentences: 3, useEmoji: false }), language: 'English' }
   const safety = adminConfig.safety_settings || {}
   const discount = adminConfig.discount_settings || {}
 
